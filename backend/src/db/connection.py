@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import AsyncIterator
 from contextlib import asynccontextmanager
 
-
 class SQLiteDatabase:
     def __init__(self, db_path: Path):
         self.db_path = db_path

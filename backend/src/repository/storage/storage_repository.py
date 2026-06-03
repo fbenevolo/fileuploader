@@ -1,4 +1,3 @@
-import shutil
 import logging
 import aiofiles
 import aiofiles.os
@@ -27,18 +26,14 @@ class LocalStorageRepository:
                 logger.exception(f"Error uploading file {filename}: {e}")
                 raise
     
-    async def download_file(self, stored_name):
+    async def download_file(self, stored_name: str) -> bytes:
         filepath = self.files_dir / stored_name
         if not filepath.exists():
             logging.exception(f"Requested file {stored_name} does not exist")
             raise FileNotFoundError(f"Requested file {stored_name} does not exist")
-        
-        downloads_dir = Path.home() / "Downloads"
-        downloads_dir.mkdir(exist_ok=True)
-        dest = downloads_dir / stored_name
-        shutil.copy2(filepath, dest)
+        async with aiofiles.open(filepath, "rb") as f:
+            return await f.read()
     
-        logger.info(f"File {stored_name} downloaded to {dest}")
 
     async def delete_file(self, stored_name):
         filepath = self.files_dir / stored_name

@@ -1,5 +1,5 @@
 import logging
-from typing import Protocol
+from typing import List, Protocol
 
 from src.models.file_models import FileModel
 from src.db.connection import SQLiteDatabase
@@ -7,13 +7,13 @@ from src.db.connection import SQLiteDatabase
 logger = logging.getLogger(__name__)
 
 class MetadataRepository(Protocol):
-    async def upload_metadata(self, file_object: FileModel): ...
-    async def list_metadata(self): ...
-    async def delete_metadata(self, stored_name: str): ...
+    async def upload_metadata(self, file_object: FileModel) -> None: ...
+    async def list_metadata(self) -> List[FileModel]: ...
+    async def delete_metadata(self, stored_name: str) -> None: ...
 
 
 class SQLiteMetadataRepository:
-    def __init__(self, db_connection: SQLiteDatabase):
+    def __init__(self, db_connection: SQLiteDatabase) -> List[FileModel]:
         self.db_connection = db_connection
 
     async def list_metadata(self):
@@ -39,7 +39,7 @@ class SQLiteMetadataRepository:
                 raise
 
 
-    async def upload_metadata(self, file_object: FileModel):
+    async def upload_metadata(self, file_object: FileModel) -> None:
         async with self.db_connection.get_connection() as connection:
             try:
                 logger.info(f"Uploading file metadata {file_object.original_name} to storage")
@@ -68,7 +68,7 @@ class SQLiteMetadataRepository:
                 raise
 
 
-    async def delete_metadata(self, stored_name: str):
+    async def delete_metadata(self, stored_name: str) -> None:
         async with self.db_connection.get_connection() as connection:
             try:
                 logger.info(f"Deleting file metadata")

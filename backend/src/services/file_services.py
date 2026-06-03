@@ -2,9 +2,11 @@ import uuid
 import logging
 from datetime import datetime
 
+from src.models.file_models import FileModel, FileUploadInput
+from src.core.config import FILE_MAX_SIZE
+from src.core.exceptions import EmptyFileException, FileHasNoExtension, FileTooLargeException
 from src.repository.storage.storage_repository import StorageRepository
 from src.repository.metadata.file_metadata_repository import SQLiteMetadataRepository
-from src.models.file_models import FileModel, FileUploadInput
 
 logger = logging.getLogger(__name__)
 
@@ -22,18 +24,23 @@ class FileService:
 
 
     async def upload_file_service(self, file_input: FileUploadInput):
-        # TODO escrever checagens
+        if file_input.size == 0:
+            raise EmptyFileException("File is empty")
+        if file_input.size > FILE_MAX_SIZE:
+            raise FileTooLargeException("File is too large")
+        if file_input.extension == "":
+            raise FileHasNoExtension("File has no extension")
 
         # gera metadados
         new_uuid = str(uuid.uuid4())
         file_object = FileModel(
             file_id=new_uuid,
             original_name=file_input.original_name,
-            stored_name=f"{new_uuid}.{file_input.extension}",
+            stored_name=f"{new_uuid}{file_input.extension}",
             size=file_input.size,
             created_at=datetime.now().date()
         )
-        
+
         file_uploaded = False
         metadata_uploaded = False
 
@@ -54,7 +61,7 @@ class FileService:
         return file_object
 
     async def download_file_service(self, stored_name: str):
-        await self.storage_repository.download_file(stored_name)
+        return await self.storage_repository.download_file(stored_name)
 
     async def delete_file_service(self, stored_name):
         try:

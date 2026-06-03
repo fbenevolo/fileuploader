@@ -38,8 +38,8 @@ async def upload_file(file: UploadFile = File(...)):
 @router.get("/download/{stored_name}")
 async def download_file(stored_name):
     try:
-        await file_service.download_file_service(stored_name)
-        return { "status": 200, "message": "File downloaded successfully" }
+        content = await file_service.download_file_service(stored_name)
+        return { "status": 200, "message": "File downloaded successfully", "body": content}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -23,5 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 
+# python envs
+venv/
+env/
+
 # caches
 *cache*/
+
+# data 
+data/
