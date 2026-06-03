@@ -1,12 +1,12 @@
 from src.services.file_services import FileService
-from src.storage.storage import LocalStorageRepository
-from src.repository.file_metadata_repository import LocalMetadataRepository
+from backend.src.repository.storage.storage_repository import LocalStorageRepository
+from backend.src.repository.metadata.file_metadata_repository import SQLiteMetadataRepository
 from src.db.connection import SQLiteDatabase
 
 from src.core.config import DB_PATH, FILES_DIR
 
 database = SQLiteDatabase(DB_PATH)
-metadata_repository = LocalMetadataRepository(database)
+metadata_repository = SQLiteMetadataRepository(database)
 storage_repository = LocalStorageRepository(FILES_DIR)
 file_service = FileService(
     metadata_repository=metadata_repository,

@@ -2,14 +2,14 @@ import uuid
 import logging
 from datetime import datetime
 
-from src.storage.storage import StorageRepository
-from src.repository.file_metadata_repository import LocalMetadataRepository
+from src.repository.storage.storage_repository import StorageRepository
+from src.repository.metadata.file_metadata_repository import SQLiteMetadataRepository
 from src.models.file_models import FileModel, FileUploadInput
 
 logger = logging.getLogger(__name__)
 
 class FileService:
-    def __init__(self, metadata_repository: LocalMetadataRepository, storage_repository: StorageRepository):
+    def __init__(self, metadata_repository: SQLiteMetadataRepository, storage_repository: StorageRepository):
         self.metadata_repository = metadata_repository
         self.storage_repository = storage_repository
 
@@ -58,7 +58,7 @@ class FileService:
             if metadata_uploaded:
                 await self.metadata_repository.delete_metadata(file_object.file_id)
 
-            raise
+            raise e
 
         return file_object
 
@@ -70,4 +70,4 @@ class FileService:
             await self.storage_repository.delete_file(stored_name)
             await self.metadata_repository.delete_metadata(stored_name)
         except Exception as e:
-            raise e 
+            raise e

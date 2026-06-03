@@ -1,11 +1,18 @@
 import logging
+from typing import Protocol
 
 from src.models.file_models import FileModel
 from src.db.connection import SQLiteDatabase
 
 logger = logging.getLogger(__name__)
 
-class LocalMetadataRepository:
+class MetadataRepository(Protocol):
+    async def upload_metadata(self, file_object: FileModel): ...
+    async def list_metadata(self): ...
+    async def delete_metadata(self, stored_name: str): ...
+
+
+class SQLiteMetadataRepository:
     def __init__(self, db_connection: SQLiteDatabase):
         self.db_connection = db_connection
 
@@ -65,6 +72,7 @@ class LocalMetadataRepository:
                 )
 
                 await connection.commit()
+                logging.info(f"Rows affected: {cursor.rowcount}")
             except Exception as e:
                 logger.exception(f"Error deleting file metadata: {e}")
                 raise
