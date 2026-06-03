@@ -24,7 +24,16 @@ class SQLiteMetadataRepository:
                 await cursor.execute("SELECT * FROM files")
                 logger.info("Metadata retrieved")
                 rows = await cursor.fetchall()
-                return rows
+                return [
+                    FileModel(
+                        file_id=row[0],
+                        original_name=row[1],
+                        stored_name=row[2],
+                        size=row[3],
+                        created_at=row[4]
+                    ).model_dump()
+                    for row in rows
+                ]
             except Exception as e:
                 logger.exception(f"Error retriveving files metadata: {e}")
                 raise

@@ -1,6 +1,6 @@
 from src.services.file_services import FileService
-from backend.src.repository.storage.storage_repository import LocalStorageRepository
-from backend.src.repository.metadata.file_metadata_repository import SQLiteMetadataRepository
+from src.repository.storage.storage_repository import LocalStorageRepository
+from src.repository.metadata.file_metadata_repository import SQLiteMetadataRepository
 from src.db.connection import SQLiteDatabase
 
 from src.core.config import DB_PATH, FILES_DIR

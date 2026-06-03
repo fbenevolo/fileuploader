@@ -16,16 +16,7 @@ class FileService:
     async def list_files_metadata_service(self):
         try:
             rows = await self.metadata_repository.list_metadata()
-            return [
-                FileModel(
-                    file_id=row[0],
-                    original_name=row[1],
-                    stored_name=row[2],
-                    size=row[3],
-                    created_at=row[4]
-                ).model_dump()
-                for row in rows
-            ]
+            return rows
         except Exception as e:
             raise
 
