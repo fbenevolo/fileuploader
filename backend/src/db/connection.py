@@ -1,9 +1,15 @@
-from contextlib import asynccontextmanager
 import aiosqlite
-from src.core.config import DB_PATH
+from pathlib import Path
+from typing import AsyncIterator
+from contextlib import asynccontextmanager
+
 
 class SQLiteDatabase:
+    def __init__(self, db_path: Path):
+        self.db_path = db_path
+
     @asynccontextmanager
-    async def get_connection(self, db_path=DB_PATH):
-        async with aiosqlite.connect(db_path) as connection:
+    async def get_connection(self) -> AsyncIterator[aiosqlite.Connection]:
+        async with aiosqlite.connect(self.db_path) as connection:
+            connection.row_factory = aiosqlite.Row
             yield connection

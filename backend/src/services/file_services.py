@@ -64,3 +64,10 @@ class FileService:
 
     async def download_file_service(self, stored_name: str):
         await self.storage_repository.download_file(stored_name)
+
+    async def delete_file_service(self, stored_name):
+        try:
+            await self.storage_repository.delete_file(stored_name)
+            await self.metadata_repository.delete_metadata(stored_name)
+        except Exception as e:
+            raise e 

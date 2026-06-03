@@ -52,7 +52,7 @@ class LocalMetadataRepository:
                 raise
 
 
-    async def delete_metadata(self, file_id: str):
+    async def delete_metadata(self, stored_name: str):
         async with self.db_connection.get_connection() as connection:
             try:
                 logger.info(f"Deleting file metadata")
@@ -60,8 +60,8 @@ class LocalMetadataRepository:
                 await cursor.execute(
                     """
                     DELETE FROM files
-                    WHERE file_id = ?
-                """, (file_id,)
+                    WHERE stored_name = ?
+                """, (stored_name,)
                 )
 
                 await connection.commit()
