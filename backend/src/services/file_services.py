@@ -38,7 +38,7 @@ class FileService:
             original_name=file_input.original_name,
             stored_name=f"{new_uuid}{file_input.extension}",
             size=file_input.size,
-            created_at=datetime.now().date()
+            created_at=datetime.now().date().strftime("%Y-%m-%d")
         )
 
         file_uploaded = False

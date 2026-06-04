@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 import logging
 import uvicorn
+from contextlib import asynccontextmanager
 
 from src.routes.file_routes import router
 from src.db.init import setup_database
 from src.core.config import setup_storage
+from src.core.dependencies import database
 
 PORT = 5000
 
@@ -15,7 +17,14 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app):
+    await database.connect()
+    yield
+    await database.disconnect()
+
+app = FastAPI(lifespan=lifespan)
 app.include_router(router)
 
 if __name__ == "__main__":

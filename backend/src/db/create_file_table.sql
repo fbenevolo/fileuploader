@@ -3,5 +3,5 @@ CREATE TABLE IF NOT EXISTS files (
     original_name TEXT NOT NULL,
     stored_name TEXT NOT NULL,
     size INTEGER NOT NULL,
-    created_at TEXT NOT NULL
+    created_at DATETIME NOT NULL
 );
