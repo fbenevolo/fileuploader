@@ -32,3 +32,6 @@ env/
 
 # data 
 data/
+
+# environment variables
+*env*
