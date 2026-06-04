@@ -1,0 +1,29 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports: 
+      - 5000:5000
+    environment:
+      - POSTGRES_HOST=database
+      - POSTGRES_DATABASE=fileuploader
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PORT=5432
+    depends_on:
+      - database
+
+  database:
+    image: postgres:17
+    environment:
+      - POSTGRES_DB=fileuploader
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - 5433:5432 
+    volumes:
+      - postgre_data:/var/lib/postgresql/data
+    
+volumes:
+  postgre_data:

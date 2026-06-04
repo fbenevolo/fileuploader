@@ -3,6 +3,9 @@ import asyncpg
 from pathlib import Path
 from typing import AsyncIterator, Protocol
 from contextlib import asynccontextmanager
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DatabaseConnection(Protocol):
     async def get_connection(self): ...
@@ -11,6 +14,13 @@ class DatabaseConnection(Protocol):
 class SQLiteDatabase:
     def __init__(self, db_path: Path):
         self.db_path = db_path
+
+    async def initialize(self):
+        logger.info("Creating database table...")
+        async with self.get_connection() as connection:
+            sql = (Path(__file__).parent / "create_file_table.sql").read_text()
+            await connection.execute(sql)
+        logger.info("Table files created successfully")
 
     @asynccontextmanager
     async def get_connection(self) -> AsyncIterator[aiosqlite.Connection]:
@@ -27,6 +37,16 @@ class PostgreSQLDatabase:
         self.password = password
         self.port = port
         self.pool = None
+
+    async def initialize(self):
+        if self.pool is None:
+            raise RuntimeError("Database pool not initialized. Call connect() first.")
+        
+        logger.info("Creating database table...")
+        async with self.get_connection() as connection:
+            sql = (Path(__file__).parent / "create_file_table.sql").read_text()
+            await connection.execute(sql)
+        logger.info("Table files created successfully")
 
     async def connect(self):
         self.pool = await asyncpg.create_pool(
