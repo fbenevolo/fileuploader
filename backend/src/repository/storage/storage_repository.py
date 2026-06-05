@@ -90,5 +90,15 @@ class S3StorageRepository:
             logger.exception(f"Error occured during download of file {file_id}: {e}")
             raise e
             
-    def delete_file(self, file_id: str) -> None:
-        s3_client = self.get_client()
+    async def delete_file(self, file_id: str) -> None:
+        try:
+            async with self.get_session().client("s3") as s3_client:
+                await s3_client.delete_object(
+                    Bucket=self.bucket_name,
+                    Key=file_id
+
+                )
+                logger.info(f"File of id {file_id} permanently deleted")
+        except Exception as e:
+            logger.exception(f"Error occured during deletion of file {file_id}: {e}")
+            raise e
