@@ -1,4 +1,4 @@
-import boto3
+import aioboto3
 import logging
 import aiofiles
 import aiofiles.os
@@ -57,24 +57,38 @@ class S3StorageRepository:
         self. aws_access_key_id = aws_access_key_id
         self.aws_secret_access_key = aws_secret_access_key
 
-    def get_client(self):
-        return boto3.client('s3', aws_access_key_id=self.aws_access_key_id, aws_secret_access_key=self.aws_secret_access_key)
+    def get_session(self):
+        return aioboto3.Session(
+            aws_access_key_id=self.aws_access_key_id,
+            aws_secret_access_key=self.aws_secret_access_key
+        )
 
     async def upload_file(self, file_content: bytes, filename: str) -> None:
-        s3_client = self.get_client()
         try:
-            s3_client.put_object(
-                Bucket=self.bucket_name,
-                Key=filename,
-                Body=file_content
-            )
-            logger.info(f"Uploaded file {filename} to bucket {self.bucket_name}")
+            async with self.get_session().client("s3") as s3_client:
+                await s3_client.put_object(
+                    Bucket=self.bucket_name,
+                    Key=filename,
+                    Body=file_content
+                )
+                logger.info(f"Uploaded file {filename} to bucket {self.bucket_name}")
         except Exception as e:
             logger.exception(f"Error occured during upload of file {filename} to bucket {self.bucket_name}: {e}")
             raise e
 
     async def download_file(self, file_id: str):
-        s3_client = self.get_client()
-
-    async def delete_file(self, file_id: str) -> None:
+        try:
+            async with self.get_session().client("s3") as s3_client:
+                return await  s3_client.generate_presigned_url(
+                    ClientMethod="get_object",
+                    Params={
+                        "Bucket": self.bucket_name,
+                        "Key": file_id
+                    },
+            )
+        except Exception as e:
+            logger.exception(f"Error occured during download of file {file_id}: {e}")
+            raise e
+            
+    def delete_file(self, file_id: str) -> None:
         s3_client = self.get_client()
