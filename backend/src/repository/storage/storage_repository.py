@@ -1,3 +1,4 @@
+import boto3
 import logging
 import aiofiles
 import aiofiles.os
@@ -51,14 +52,29 @@ class LocalStorageRepository:
 
 
 class S3StorageRepository:
-    def __init__(self, files_dir: Path):
-        self.files_dir = files_dir
+    def __init__(self, bucket_name: str, aws_access_key_id: str, aws_secret_access_key: str):
+        self.bucket_name = bucket_name
+        self. aws_access_key_id = aws_access_key_id
+        self.aws_secret_access_key = aws_secret_access_key
+
+    def get_client(self):
+        return boto3.client('s3', aws_access_key_id=self.aws_access_key_id, aws_secret_access_key=self.aws_secret_access_key)
 
     async def upload_file(self, file_content: bytes, filename: str) -> None:
-        ... 
+        s3_client = self.get_client()
+        try:
+            s3_client.put_object(
+                Bucket=self.bucket_name,
+                Key=filename,
+                Body=file_content
+            )
+            logger.info(f"Uploaded file {filename} to bucket {self.bucket_name}")
+        except Exception as e:
+            logger.exception(f"Error occured during upload of file {filename} to bucket {self.bucket_name}: {e}")
+            raise e
 
-    async def download_file(self, stored_name: str):
-        ...
+    async def download_file(self, file_id: str):
+        s3_client = self.get_client()
 
-    async def delete_file(self, stored_name: str) -> None:
-        ...
+    async def delete_file(self, file_id: str) -> None:
+        s3_client = self.get_client()

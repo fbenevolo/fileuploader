@@ -35,3 +35,7 @@ data/
 
 # environment variables
 *env*
+
+# terraform files
+terraform.tfstate*
+.terraform*
