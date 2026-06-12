@@ -1,0 +1,13 @@
+name: test workflow
+
+on: [push, pull, pull_request_target]
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      name: "Echo basic info"
+      run: |
+        echo "REF: $GITHUB_REF"
+        echo "Job ID: $GITHUB_JOB"
+        echo "Action: $GITHUB_ACTION"
