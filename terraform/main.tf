@@ -25,3 +25,43 @@ resource "aws_dynamodb_table" "fileuploadertable" {
       type = "S"
     }
 }
+
+# IAM role for Lambda execution
+data "aws_iam_policy_document" "assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "lambdarole" {
+  name               = "lambda_execution_role"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+}
+
+data "archive_file" "fileuploader_file" {
+  type        = "zip"
+  source_dir  = "${path.root}/../backend/src"
+  output_path = "${path.root}/outputs/fileuploader.zip"
+}
+
+resource "aws_lambda_function" "fileuploader_function" {
+  function_name = "fileuploader"
+  role = aws_iam_role.lambdarole.arn
+
+  filename = data.archive_file.fileuploader_file.output_path
+  handler = "src.main.handler"
+  runtime = "python3.12"
+
+  # detect changes in zip file 
+  source_code_hash = data.archive_file.fileuploader_file.output_base64sha256
+
+  timeout = 30
+  memory_size = 512
+}

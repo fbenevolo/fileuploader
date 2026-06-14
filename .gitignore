@@ -39,3 +39,4 @@ data/
 # terraform files
 terraform.tfstate*
 .terraform*
+terraform/outputs

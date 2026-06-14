@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from mangum import Mangum
 import logging
 import uvicorn
+from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 from src.routes.file_routes import router
@@ -27,6 +28,8 @@ async def lifespan(app):
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(router)
+
+handler = Mangum(app)
 
 if __name__ == "__main__":
     try:
