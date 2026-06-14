@@ -14,6 +14,7 @@ POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "postgres")
 POSTGRES_PORT = int(os.getenv("POSTGRES_PORT", 5432))
 
+
 def setup_storage():
     DATA_DIR.mkdir(exist_ok=True)
     FILES_DIR.mkdir(exist_ok=True)

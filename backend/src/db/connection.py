@@ -7,6 +7,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class DatabaseConnection(Protocol):
     async def get_connection(self): ...
 
@@ -41,7 +42,7 @@ class PostgreSQLDatabase:
     async def initialize(self):
         if self.pool is None:
             raise RuntimeError("Database pool not initialized. Call connect() first.")
-        
+
         logger.info("Creating database table...")
         async with self.get_connection() as connection:
             sql = (Path(__file__).parent / "create_file_table.sql").read_text()
@@ -56,7 +57,7 @@ class PostgreSQLDatabase:
             password=self.password,
             port=self.port,
             min_size=1,
-            max_size=10
+            max_size=10,
         )
 
     async def disconnect(self):

@@ -10,8 +10,7 @@ from src.core.dependencies import database
 PORT = 5000
 
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+    level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
 )
 
 logger = logging.getLogger(__name__)
@@ -24,6 +23,7 @@ async def lifespan(app):
     await database.initialize()
     yield
     await database.disconnect()
+
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(router)

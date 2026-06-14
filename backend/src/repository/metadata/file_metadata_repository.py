@@ -6,6 +6,7 @@ from src.db.connection import DatabaseConnection
 
 logger = logging.getLogger(__name__)
 
+
 class MetadataRepository(Protocol):
     async def upload_metadata(self, file_object: FileModel) -> None: ...
     async def list_metadata(self) -> List[FileModel]: ...
@@ -30,7 +31,7 @@ class SQLiteMetadataRepository:
                         original_name=row[1],
                         stored_name=row[2],
                         size=row[3],
-                        created_at=row[4]
+                        created_at=row[4],
                     ).model_dump()
                     for row in rows
                 ]
@@ -38,11 +39,12 @@ class SQLiteMetadataRepository:
                 logger.exception(f"Error retriveving files metadata: {e}")
                 raise
 
-
     async def upload_metadata(self, file_object: FileModel) -> None:
         async with self.db_connection.get_connection() as connection:
             try:
-                logger.info(f"Uploading file metadata {file_object.original_name} to storage")
+                logger.info(
+                    f"Uploading file metadata {file_object.original_name} to storage"
+                )
                 cursor = await connection.cursor()
                 await cursor.execute(
                     """
@@ -54,19 +56,22 @@ class SQLiteMetadataRepository:
                         created_at
                     )
                     VALUES (?, ?, ?, ?, ?)
-                """, (
-                    file_object.file_id,
-                    file_object.original_name,
-                    file_object.stored_name,
-                    file_object.size,
-                    file_object.created_at
-                ))
+                """,
+                    (
+                        file_object.file_id,
+                        file_object.original_name,
+                        file_object.stored_name,
+                        file_object.size,
+                        file_object.created_at,
+                    ),
+                )
 
                 await connection.commit()
             except Exception as e:
-                logger.exception(f"Error uploading file metadata {file_object.original_name}: {e}")
+                logger.exception(
+                    f"Error uploading file metadata {file_object.original_name}: {e}"
+                )
                 raise
-
 
     async def delete_metadata(self, stored_name: str) -> None:
         async with self.db_connection.get_connection() as connection:
@@ -77,7 +82,8 @@ class SQLiteMetadataRepository:
                     """
                     DELETE FROM files
                     WHERE stored_name = ?
-                """, (stored_name,)
+                """,
+                    (stored_name,),
                 )
 
                 await connection.commit()
@@ -91,7 +97,6 @@ class PostgreSQLMetadataRepository:
     def __init__(self, db_connection: DatabaseConnection):
         self.db_connection = db_connection
 
-        
     async def upload_metadata(self, file_object: FileModel) -> None:
         async with self.db_connection.get_connection() as connection:
             try:
@@ -112,11 +117,13 @@ class PostgreSQLMetadataRepository:
                     file_object.original_name,
                     file_object.stored_name,
                     file_object.size,
-                    file_object.created_at
+                    file_object.created_at,
                 )
 
             except Exception as e:
-                logger.exception(f"Error uploading file metadata {file_object.original_name}: {e}")
+                logger.exception(
+                    f"Error uploading file metadata {file_object.original_name}: {e}"
+                )
                 raise
 
     async def list_metadata(self) -> List[dict]:
@@ -141,7 +148,7 @@ class PostgreSQLMetadataRepository:
                         original_name=row["original_name"],
                         stored_name=row["stored_name"],
                         size=row["size"],
-                        created_at=row["created_at"]
+                        created_at=row["created_at"],
                     ).model_dump()
                     for row in rows
                 ]
@@ -152,22 +159,18 @@ class PostgreSQLMetadataRepository:
     async def delete_metadata(self, stored_name: str) -> None:
         async with self.db_connection.get_connection() as connection:
             try:
-                logger.info(
-                    f"Deleting metadata for file {stored_name}"
-                )
+                logger.info(f"Deleting metadata for file {stored_name}")
 
                 result = await connection.execute(
                     """
                     DELETE FROM files
                     WHERE stored_name = $1
                     """,
-                    stored_name
+                    stored_name,
                 )
 
                 logger.info(result)
 
             except Exception as e:
-                logger.exception(
-                    f"Error deleting file metadata: {e}"
-                )
+                logger.exception(f"Error deleting file metadata: {e}")
                 raise
