@@ -2,7 +2,6 @@ from unittest.mock import AsyncMock
 
 import pytest
 import pytest_asyncio
-from pathlib import Path
 
 from src.db.connection import SQLiteDatabase
 from src.models.file_models import FileModel, FileUploadInput
