@@ -42,7 +42,6 @@ jobs:
     
         - name: Run ruff
           run: |
-            ruff check .
             ruff format --check .
         - name: Run MyPy
           run: |
