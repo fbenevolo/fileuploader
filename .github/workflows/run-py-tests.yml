@@ -1,14 +1,28 @@
 name: Run Backend Tests
 
-on: push
+on: 
+  push:
+    paths:
+      - "backend/**"
+      - ".github/workflows/**"
+  
+  pull_request:
+    paths:
+      - "backend/**"
 
 defaults:
   run:
     working-directory: backend
 
+
+
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
     
     steps:
       - name: Checkout repository
@@ -17,13 +31,18 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
+          # usa caching de dependências para agilizar a execução do workflow
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
 
       - name: Install dependencies
+        # usar python garante que o pip pertence ao interpretador configurado 
         run: |
-          pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
 
       - name: Run Tests
         run: |
           cd tests
-          pytest
+          pytest -v
