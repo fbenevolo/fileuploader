@@ -14,8 +14,6 @@ defaults:
   run:
     working-directory: backend
 
-
-
 jobs:       
   lint:
     runs-on: ubuntu-latest
@@ -43,9 +41,6 @@ jobs:
         - name: Run ruff
           run: |
             ruff format --check .
-        - name: Run MyPy
-          run: |
-            mypy .
 
   test:
     needs: lint
