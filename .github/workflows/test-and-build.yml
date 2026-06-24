@@ -10,9 +10,9 @@ on:
     paths:
       - "backend/**"
 
-defaults:
-  run:
-    working-directory: backend
+# defaults:
+#   run:
+#     working-directory: backend
 
 permissions:
   contents: read
@@ -39,11 +39,11 @@ jobs:
           # usar python garante que o pip pertence ao interpretador configurado 
           run: |
             python -m pip install --upgrade pip
-            python -m pip install -r requirements.txt
+            python -m pip install -r backend/requirements.txt
     
         - name: Run ruff
           run: |
-            ruff format --check .
+            ruff format --check backend/
 
   test:
     needs: lint
@@ -67,11 +67,11 @@ jobs:
         # usar python garante que o pip pertence ao interpretador configurado 
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
+          python -m pip install -r backend/requirements.txt
   
       - name: Run Tests
         run: |
-          cd tests
+          cd backend/tests
           pytest -v
 
   deploy:
@@ -82,30 +82,30 @@ jobs:
         run: |
           ls
     
-      - name: Build lambda package
-        run: |
-          mkdir build
+      # - name: Build lambda package
+      #   run: |
+      #     mkdir build
   
-          pip install \
-              --target build \
-              -r requirements.txt
+      #     pip install \
+      #         --target build \
+      #         -r requirements.txt
   
-          cp -r src build/src
+      #     cp -r backend/src build/src
 
-      - name: Create zip
-        run: |
-          cd build
-          zip -r ../lambda.zip .
+      # - name: Create zip
+      #   run: |
+      #     cd build
+      #     zip -r ../lambda.zip .
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: us-east-1
 
-      - name: Upload artifact to S3
-        run: |
-          aws s3 cp \
-            lambda.zip \
-            s3://fileuploader-zip/lambda/lambda.zip
+      # - name: Upload artifact to S3
+      #   run: |
+      #     aws s3 cp \
+      #       lambda.zip \
+      #       s3://fileuploader-zip/lambda/lambda.zip
