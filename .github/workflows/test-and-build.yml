@@ -88,6 +88,10 @@ jobs:
   
           cp -r src build/src
 
+      - name: lists directories
+        run: |
+          ls
+
       - name: Create zip
         run: |
           cd build
