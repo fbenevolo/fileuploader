@@ -87,7 +87,7 @@ jobs:
   
           cp -r backend/src build/src
           cp backend/main.py build/
-          cp __init__.py build/
+          cp backend/__init__.py build/
 
       - name: Create zip
         run: |
