@@ -56,7 +56,7 @@ resource "aws_lambda_function" "fileuploader_function" {
   s3_key = var.lambda_key
 
   # filename = data.archive_file.fileuploader_file.output_path
-  handler = "src.main.handler"
+  handler = "main.handler"
   runtime = "python3.12"
 
   # detect changes in zip file 
