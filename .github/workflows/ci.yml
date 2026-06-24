@@ -1,4 +1,4 @@
-name: Run Backend Tests and deploy to zip to S3
+name: CI
 
 on: 
   push:
@@ -9,10 +9,6 @@ on:
   pull_request:
     paths:
       - "backend/**"
-
-# defaults:
-#   run:
-#     working-directory: backend
 
 permissions:
   contents: read
@@ -74,7 +70,7 @@ jobs:
           cd backend/tests
           pytest -v
 
-  deploy:
+  package:
     needs: test
     runs-on: ubuntu-latest
     steps:
@@ -107,4 +103,4 @@ jobs:
         run: |
           aws s3 cp \
             lambda.zip \
-            s3://fileuploader-zip/lambda/lambda.zip
+            s3://fileuploader-zip/lambda/${{ github.sha }}.zip
