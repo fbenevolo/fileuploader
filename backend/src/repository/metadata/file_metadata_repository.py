@@ -174,3 +174,9 @@ class PostgreSQLMetadataRepository:
             except Exception as e:
                 logger.exception(f"Error deleting file metadata: {e}")
                 raise
+
+
+class DynamoDBMetadataRepository:
+    async def upload_metadata(self, file_object: FileModel) -> None: ...
+    async def list_metadata(self) -> List[FileModel]: ...
+    async def delete_metadata(self, stored_name: str) -> None: ...

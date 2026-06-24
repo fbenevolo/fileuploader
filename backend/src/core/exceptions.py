@@ -8,3 +8,6 @@ class FileTooLargeException(Exception):
 
 class FileHasNoExtension(Exception):
     pass
+
+class ModeNotFound(Exception):
+    pass

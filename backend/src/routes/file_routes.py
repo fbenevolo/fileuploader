@@ -1,9 +1,8 @@
 import logging
 from pathlib import Path
-from fastapi import APIRouter, UploadFile, File, HTTPException
-
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from src.models.file_models import FileUploadInput
-from src.core.dependencies import file_service
+from src.core.dependencies import get_file_service
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +10,7 @@ router = APIRouter()
 
 
 @router.get("/list")
-async def list_files_metadata():
+async def list_files_metadata(file_service=Depends(get_file_service)):
     try:
         files = await file_service.list_files_metadata_service()
         return {"status": 200, "message": "Files retrieved successfully", "body": files}
@@ -21,7 +20,7 @@ async def list_files_metadata():
 
 
 @router.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(file: UploadFile = File(...), file_service=Depends(get_file_service)):
     try:
         file_input = FileUploadInput(
             original_name=file.filename,
@@ -37,7 +36,7 @@ async def upload_file(file: UploadFile = File(...)):
 
 
 @router.get("/download/{stored_name}")
-async def download_file(stored_name):
+async def download_file(stored_name, file_service=Depends(get_file_service)):
     try:
         content = await file_service.download_file_service(stored_name)
         return {
@@ -50,7 +49,7 @@ async def download_file(stored_name):
 
 
 @router.delete("/delete/{stored_name}")
-async def delete_file(stored_name):
+async def delete_file(stored_name, file_service=Depends(get_file_service)):
     try:
         await file_service.delete_file_service(stored_name)
         return {"status": 200, "message": "File and its metadata deleted successfully"}
