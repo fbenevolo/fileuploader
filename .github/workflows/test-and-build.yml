@@ -78,6 +78,10 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
+      - name: lists directories
+        run: |
+          ls
+    
       - name: Build lambda package
         run: |
           mkdir build
@@ -87,10 +91,6 @@ jobs:
               -r requirements.txt
   
           cp -r src build/src
-
-      - name: lists directories
-        run: |
-          ls
 
       - name: Create zip
         run: |
