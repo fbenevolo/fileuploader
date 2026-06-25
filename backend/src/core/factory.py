@@ -13,7 +13,7 @@ from src.repository.storage.storage_repository import (
 )
 from src.repository.metadata.file_metadata_repository import (
     PostgreSQLMetadataRepository,
-    DynamoDBMetadataRepository
+    DynamoDBMetadataRepository,
 )
 from src.db.connection import PostgreSQLDatabase
 
@@ -27,6 +27,7 @@ from src.core.config import (
     setup_storage,
 )
 
+
 @dataclass
 class AppStack:
     metadata_repository: object
@@ -38,36 +39,39 @@ class AWSProvider:
     @classmethod
     def build_stack(cls):
         metadata_repository = DynamoDBMetadataRepository()
-        storage_repository = S3StorageRepository(os.getenv("BUCKET_NAME"),
-                                                 os.getenv("aws_access_key_id"),
-                                                 os.getenv("aws_secret_access_key"),
-                                                 )
-        
+        storage_repository = S3StorageRepository(
+            os.getenv("BUCKET_NAME"),
+            os.getenv("aws_access_key_id"),
+            os.getenv("aws_secret_access_key"),
+        )
+
         return AppStack(metadata_repository, storage_repository, None)
 
 
 class LocalProvider:
     @classmethod
     def build_stack(cls):
-        database = PostgreSQLDatabase(POSTGRES_HOST,
-                                      POSTGRES_DATABASE,
-                                      POSTGRES_USER,
-                                      POSTGRES_PASSWORD,
-                                      POSTGRES_PORT)
+        database = PostgreSQLDatabase(
+            POSTGRES_HOST,
+            POSTGRES_DATABASE,
+            POSTGRES_USER,
+            POSTGRES_PASSWORD,
+            POSTGRES_PORT,
+        )
         metadata_repository = PostgreSQLMetadataRepository(database)
         storage_repository = LocalStorageRepository(FILES_DIR)
         return AppStack(metadata_repository, storage_repository, database)
 
 
 def create_app(mode: str) -> FastAPI:
-    if mode not in ("aws", "local"): 
+    if mode not in ("aws", "local"):
         raise ModeNotFound("mode must be 'aws' or 'local' ")
 
-    if mode == "aws": 
+    if mode == "aws":
         stack = AWSProvider.build_stack()
-    else: 
+    else:
         stack = LocalProvider.build_stack()
-    
+
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         if stack.database:
@@ -78,7 +82,10 @@ def create_app(mode: str) -> FastAPI:
         if stack.database:
             await stack.database.disconnect()
 
-    file_service = FileService(metadata_repository=stack.metadata_repository, storage_repository=stack.storage_repository)
+    file_service = FileService(
+        metadata_repository=stack.metadata_repository,
+        storage_repository=stack.storage_repository,
+    )
     app = FastAPI(lifespan=lifespan)
     app.state.file_service = file_service
     return app

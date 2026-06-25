@@ -20,7 +20,9 @@ async def list_files_metadata(file_service=Depends(get_file_service)):
 
 
 @router.post("/upload")
-async def upload_file(file: UploadFile = File(...), file_service=Depends(get_file_service)):
+async def upload_file(
+    file: UploadFile = File(...), file_service=Depends(get_file_service)
+):
     try:
         file_input = FileUploadInput(
             original_name=file.filename,
