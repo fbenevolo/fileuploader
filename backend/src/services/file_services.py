@@ -10,7 +10,7 @@ from src.core.exceptions import (
     FileTooLargeException,
 )
 from src.repository.storage.storage_repository import StorageRepository
-from src.repository.metadata.file_metadata_repository import SQLiteMetadataRepository
+from src.repository.metadata.file_metadata_repository import MetadataRepository
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class FileService:
     def __init__(
         self,
-        metadata_repository: SQLiteMetadataRepository,
+        metadata_repository: MetadataRepository,
         storage_repository: StorageRepository,
     ):
         self.metadata_repository = metadata_repository
