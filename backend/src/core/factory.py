@@ -81,7 +81,7 @@ def create_app(mode: str) -> FastAPI:
         if stack.database:
             await stack.database.connect()
             await stack.database.initialize()
-        setup_storage()
+            setup_storage()
         yield
         if stack.database:
             await stack.database.disconnect()
