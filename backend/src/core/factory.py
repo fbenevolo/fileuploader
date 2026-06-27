@@ -3,7 +3,7 @@ from typing import Optional
 from fastapi import FastAPI
 from dataclasses import dataclass
 from contextlib import asynccontextmanager
-from backend.src.core.exceptions import ModeNotFound
+from src.core.exceptions import ModeNotFound
 
 
 from src.services.file_services import FileService
