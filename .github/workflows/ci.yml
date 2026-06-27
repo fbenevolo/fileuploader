@@ -5,6 +5,7 @@ on:
     paths:
       - "backend/**"
       - ".github/workflows/**"
+      - "terraform/**"
   
   pull_request:
     paths:
