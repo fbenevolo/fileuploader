@@ -32,16 +32,16 @@ resource "aws_apigatewayv2_integration" "lambda_integration" {
 # }
 
 
-resource "aws_apigatewayv2_route" "delete_route" {
-  api_id = aws_apigatewayv2_api.fileuploader_api.id
-  route_key = "DELETE /delete/{stored_name}"
-  target = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
-}
+# resource "aws_apigatewayv2_route" "delete_route" {
+#   api_id = aws_apigatewayv2_api.fileuploader_api.id
+#   route_key = "DELETE /delete/{stored_name}"
+#   target = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+# }
 
 # =========================================================
 
-resource "aws_apigatewayv2_stage" "default" {
+resource "aws_apigatewayv2_route" "proxy" {
   api_id = aws_apigatewayv2_api.fileuploader_api.id
-  name = "$default"
-  auto_deploy = true
+  route_key = "$default"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }
