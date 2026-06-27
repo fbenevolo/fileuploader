@@ -193,7 +193,7 @@ class DynamoDBMetadataRepository:
                     TableName=self.table_name,
                     Item={
                         "file_id": {"S": file_object.file_id},
-                        "created_at": {"S": file_object.created_at.isoformat()},
+                        "created_at": {"S": file_object.created_at},
                         "original_name": {"S": file_object.original_name},
                         "stored_name": {"S": file_object.stored_name},
                         "size": {"N": str(file_object.size)},
