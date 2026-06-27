@@ -52,18 +52,11 @@ class LocalStorageRepository:
 
 
 class S3StorageRepository:
-    def __init__(
-        self, bucket_name: str, aws_access_key_id: str, aws_secret_access_key: str
-    ):
+    def __init__(self, bucket_name: str):
         self.bucket_name = bucket_name
-        self.aws_access_key_id = aws_access_key_id
-        self.aws_secret_access_key = aws_secret_access_key
 
     def get_session(self):
-        return aioboto3.Session(
-            aws_access_key_id=self.aws_access_key_id,
-            aws_secret_access_key=self.aws_secret_access_key,
-        )
+        return aioboto3.Session()
 
     async def upload_file(self, file_content: bytes, filename: str) -> None:
         try:

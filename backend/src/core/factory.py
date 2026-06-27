@@ -40,13 +40,9 @@ class AWSProvider:
     def build_stack(cls):
         metadata_repository = DynamoDBMetadataRepository(
             os.getenv("DYNAMO_TABLE"),
-            os.getenv("aws_access_key_id"),
-            os.getenv("aws_secret_access_key"),
         )
         storage_repository = S3StorageRepository(
             os.getenv("BUCKET_NAME"),
-            os.getenv("aws_access_key_id"),
-            os.getenv("aws_secret_access_key"),
         )
 
         return AppStack(metadata_repository, storage_repository, None)

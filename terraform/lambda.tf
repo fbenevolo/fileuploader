@@ -2,12 +2,6 @@ variable "lambda_key" {
   type = string 
 }
 
-# data "archive_file" "fileuploader_file" {
-#   type        = "zip"
-#   source_dir  = "${path.root}/../backend/src"
-#   output_path = "${path.root}/outputs/fileuploader.zip"
-# }
-
 data "aws_iam_policy_document" "assume_role" {
   statement {
     effect = "Allow"
@@ -64,6 +58,13 @@ resource "aws_lambda_function" "fileuploader_function" {
 
   timeout = 30
   memory_size = 512
+
+  environment {
+    variables = {
+      BUCKET_NAME = aws_s3_bucket.fileuploaderbucket.bucket
+      DYNAMO_TABLE = aws_dynamodb_table.fileuploadertable.name
+    }
+  }
 }
 
 # ==========================================================================

@@ -180,18 +180,11 @@ class PostgreSQLMetadataRepository:
 
 
 class DynamoDBMetadataRepository:
-    def __init__(
-        self, table_name: str, aws_access_key_id: str, aws_secret_access_key: str
-    ):
+    def __init__(self, table_name: str):
         self.table_name = table_name
-        self.aws_access_key_id = aws_access_key_id
-        self.aws_secret_access_key = aws_secret_access_key
 
     def get_session(self):
-        return aioboto3.Session(
-            aws_access_key_id=self.aws_access_key_id,
-            aws_secret_access_key=self.aws_secret_access_key,
-        )
+        return aioboto3.Session()
 
     async def upload_metadata(self, file_object: FileModel) -> None:
         try:
