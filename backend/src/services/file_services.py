@@ -5,9 +5,12 @@ from datetime import datetime
 from src.models.file_models import FileModel, FileUploadInput
 from src.core.config import FILE_MAX_SIZE
 from src.core.exceptions import (
+    DynamoDBException,
     EmptyFileException,
     FileHasNoExtension,
     FileTooLargeException,
+    FileUploadException,
+    S3StorageException,
 )
 from src.repository.storage.storage_repository import StorageRepository
 from src.repository.metadata.file_metadata_repository import MetadataRepository
@@ -25,11 +28,8 @@ class FileService:
         self.storage_repository = storage_repository
 
     async def list_files_metadata_service(self):
-        try:
-            rows = await self.metadata_repository.list_metadata()
-            return rows
-        except Exception as e:
-            raise
+        rows = await self.metadata_repository.list_metadata()
+        return rows
 
     async def upload_file_service(self, file_input: FileUploadInput):
         if file_input.size == 0:
@@ -59,16 +59,24 @@ class FileService:
             file_uploaded = True
             await self.metadata_repository.upload_metadata(file_object)
             metadata_uploaded = True
-        except Exception as e:
+        except (S3StorageException, DynamoDBException) as e:
             logger.exception(
-                f"Some error occured while uploading file and metadata: {e}, Trying to rollback..."
+                "Some error occured while uploading file and metadata. Trying to rollback..."
             )
             if file_uploaded:
-                await self.storage_repository.delete_file(file_object.stored_name)
+                try:
+                    await self.storage_repository.delete_file(file_object.stored_name)
+                except Exception as e2:
+                    logger.exception("Rollback failed in file deletion step.")
+                    raise e2
             if metadata_uploaded:
-                await self.metadata_repository.delete_metadata(file_object.file_id)
+                try:
+                    await self.metadata_repository.delete_metadata(file_object.file_id)
+                except Exception as e3:
+                    logger.exception("Rollback failed in metadata deletion step")
+                    raise e3
 
-            raise e
+            raise FileUploadException("Unable to complete file upload.") from e
 
         return file_object
 
@@ -76,8 +84,5 @@ class FileService:
         return await self.storage_repository.download_file(stored_name)
 
     async def delete_file_service(self, stored_name):
-        try:
-            await self.storage_repository.delete_file(stored_name)
-            await self.metadata_repository.delete_metadata(stored_name)
-        except Exception as e:
-            raise e
+        await self.storage_repository.delete_file(stored_name)
+        await self.metadata_repository.delete_metadata(stored_name)

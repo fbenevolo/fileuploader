@@ -1,9 +1,8 @@
-import datetime
-
 import aioboto3
 import logging
 from typing import List, Protocol
-
+from botocore.exceptions import ClientError
+from src.core.exceptions import DynamoDBException
 from src.models.file_models import FileModel
 from src.db.connection import DatabaseConnection
 
@@ -182,13 +181,11 @@ class PostgreSQLMetadataRepository:
 class DynamoDBMetadataRepository:
     def __init__(self, table_name: str):
         self.table_name = table_name
-
-    def get_session(self):
-        return aioboto3.Session()
+        self.session = aioboto3.Session()
 
     async def upload_metadata(self, file_object: FileModel) -> None:
         try:
-            async with self.get_session().client("dynamodb") as dynamo_client:
+            async with self.session.client("dynamodb") as dynamo_client:
                 await dynamo_client.put_item(
                     TableName=self.table_name,
                     Item={
@@ -199,18 +196,16 @@ class DynamoDBMetadataRepository:
                         "size": {"N": str(file_object.size)},
                     },
                 )
-                logger.info("Uploaded file to dynamo successfully")
-        except Exception as e:
-            logger.error(f"Error occured during upload of metadata to AWS: {e}")
-            raise
+        except ClientError as e:
+            raise DynamoDBException(
+                "Error occured during upload of metadata to AWS"
+            ) from e
 
     async def list_metadata(self) -> List[FileModel]:
         try:
-            async with self.get_session().client("dynamodb") as dynamo_client:
+            async with self.session.client("dynamodb") as dynamo_client:
                 response = await dynamo_client.scan(TableName=self.table_name)
-
                 items = []
-
                 for item in response["Items"]:
                     items.append(
                         FileModel(
@@ -223,17 +218,15 @@ class DynamoDBMetadataRepository:
                     )
 
                 return items
-        except Exception as e:
-            logger.error(f"Error occured during listing metadata: {e}")
-            raise
+        except ClientError as e:
+            raise DynamoDBException("Error occured during listing metadata") from e
 
-    async def delete_metadata(self, file_id: str) -> None:
+    async def delete_metadata(self, stored_name: str) -> None:
         try:
-            async with self.get_session().client("dynamodb") as dynamo_client:
+            file_id = stored_name[:-4]
+            async with self.session.client("dynamodb") as dynamo_client:
                 await dynamo_client.delete_item(
                     TableName=self.table_name, Key={"file_id": {"S": file_id}}
                 )
-                logging.info("Item deleted successfully")
-        except Exception as e:
-            logger.error(f"Error occured deleting metadata: {e}")
-            raise
+        except ClientError as e:
+            raise DynamoDBException("Error occured deleting metadata") from e

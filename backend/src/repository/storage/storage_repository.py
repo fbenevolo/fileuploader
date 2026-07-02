@@ -4,13 +4,16 @@ import aiofiles
 import aiofiles.os
 from pathlib import Path
 from typing import Protocol
+from botocore.exceptions import BotoCoreError, ClientError
+from src.core.exceptions import S3StorageException
+
 
 logger = logging.getLogger(__name__)
 
 
 class StorageRepository(Protocol):
     async def upload_file(self, file_content: bytes, filename: str) -> None: ...
-    async def download_file(self, stored_name: str): ...
+    async def download_file(self, stored_name: str) -> bytes: ...
     async def delete_file(self, stored_name: str) -> None: ...
 
 
@@ -54,39 +57,36 @@ class LocalStorageRepository:
 class S3StorageRepository:
     def __init__(self, bucket_name: str):
         self.bucket_name = bucket_name
-
-    def get_session(self):
-        return aioboto3.Session()
+        self.session = aioboto3.Session()
 
     async def upload_file(self, file_content: bytes, filename: str) -> None:
         try:
-            async with self.get_session().client("s3") as s3_client:
+            async with self.session.client("s3") as s3_client:
                 await s3_client.put_object(
                     Bucket=self.bucket_name, Key=filename, Body=file_content
                 )
-                logger.info(f"Uploaded file {filename} to bucket {self.bucket_name}")
-        except Exception as e:
-            logger.exception(
-                f"Error occured during upload of file {filename} to bucket {self.bucket_name}: {e}"
-            )
-            raise e
+        except (BotoCoreError, ClientError) as e:
+            raise S3StorageException(
+                f"Error occured during upload of file {filename} to bucket {self.bucket_name}"
+            ) from e
 
-    async def download_file(self, file_id: str):
+    async def download_file(self, file_id: str) -> bytes:
         try:
-            async with self.get_session().client("s3") as s3_client:
-                return await s3_client.generate_presigned_url(
+            async with self.session.client("s3") as s3_client:
+                return s3_client.generate_presigned_url(
                     ClientMethod="get_object",
                     Params={"Bucket": self.bucket_name, "Key": file_id},
                 )
-        except Exception as e:
-            logger.exception(f"Error occured during download of file {file_id}: {e}")
-            raise e
+        except (BotoCoreError, ClientError) as e:
+            raise S3StorageException(
+                f"Error occured during download of file {file_id}"
+            ) from e
 
     async def delete_file(self, file_id: str) -> None:
         try:
-            async with self.get_session().client("s3") as s3_client:
+            async with self.session.client("s3") as s3_client:
                 await s3_client.delete_object(Bucket=self.bucket_name, Key=file_id)
-                logger.info(f"File of id {file_id} permanently deleted")
-        except Exception as e:
-            logger.exception(f"Error occured during deletion of file {file_id}: {e}")
-            raise e
+        except (BotoCoreError, ClientError) as e:
+            raise S3StorageException(
+                f"Error occured during deletion of file {file_id}"
+            ) from e

@@ -12,3 +12,15 @@ class FileHasNoExtension(Exception):
 
 class ModeNotFound(Exception):
     pass
+
+
+class FileUploadException(Exception):
+    pass
+
+
+class S3StorageException(Exception):
+    pass
+
+
+class DynamoDBException(Exception):
+    pass
