@@ -1,22 +1,35 @@
 services:
-  backend:
+  file:
     build:
-      context: ./backend
+      context: ./backend/src/file_service
       dockerfile: Dockerfile
     ports: 
       - 5000:5000
     env_file:
-      - .backend-env
+      - ./backend/src/file_service/.env
     depends_on:
       database:
         condition: service_healthy
     volumes:
       - storage_data:/app/storage
 
+  metadata:
+    build:
+      context: ./backend/src/metadata_service
+      dockerfile: Dockerfile
+    ports: 
+      - 5001:5001
+    env_file:
+      - ./backend/src/metadata_service/.env
+    depends_on:
+      database:
+        condition: service_healthy
+    volumes:
+      - storage_data:/app/storage
   database:
     image: postgres:17
     env_file:
-      - .db-env
+      - .env
     ports:
       - 5433:5432 
     volumes:
