@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from src.models import MetadataInput
 from src.core.exceptions import DynamoDBException, MetadataUploadException
@@ -18,13 +19,8 @@ class MetadataService:
         rows = await self.metadata_repository.list_metadata()
         return rows
 
-    async def upload_metadata_service(self, metadata_input: MetadataInput):
-        try:
-            await self.metadata_repository.upload_metadata(metadata_input)
-        except DynamoDBException as e:
-            raise MetadataUploadException("Error uploading metadata") from e
-        except Exception as e2:
-            raise e2
+    async def upload_metadata_service(self, event: Any):
+        await self.metadata_repository.upload_metadata(event)
 
     async def delete_metadata_service(self, file_id: str):
         await self.metadata_repository.delete_metadata(file_id)

@@ -19,10 +19,10 @@ class PostgreSQLMetadataRepository:
     def __init__(self, db_connection: PostgreSQLDatabase):
         self.db_connection = db_connection
 
-    async def upload_metadata(self, file_object: MetadataInput) -> None:
+    async def upload_metadata(self, metadata: MetadataInput) -> None:
         async with self.db_connection.get_connection() as connection:
             try:
-                logger.info(f"Uploading file metadata {file_object.original_name}")
+                logger.info(f"Uploading file metadata {metadata.original_name}")
 
                 await connection.execute(
                     """
@@ -35,16 +35,16 @@ class PostgreSQLMetadataRepository:
                     )
                     VALUES ($1, $2, $3, $4, $5)
                     """,
-                    file_object.file_id,
-                    file_object.original_name,
-                    file_object.stored_name,
-                    file_object.size,
-                    file_object.created_at,
+                    metadata.file_id,
+                    metadata.original_name,
+                    metadata.stored_name,
+                    metadata.size,
+                    metadata.created_at,
                 )
                 logger.info("Metadata uploaded successfully")
             except Exception as e:
                 raise Exception(
-                    f"Error uploading file metadata {file_object.original_name}"
+                    f"Error uploading file metadata {metadata.original_name}"
                 ) from e
 
     async def list_metadata(self) -> List[dict]:
@@ -84,7 +84,7 @@ class PostgreSQLMetadataRepository:
                 result = await connection.execute(
                     """
                     DELETE FROM files
-                    WHERE stored_name = $1
+                    WHERE file_id = $1
                     """,
                     file_id,
                 )

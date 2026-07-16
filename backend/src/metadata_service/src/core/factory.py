@@ -1,10 +1,11 @@
 import os
+import asyncio
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from src.service import MetadataService
 from src.core.exceptions import ModeNotFound
 
-
+from src.consumer import MetadataConsumer
 from src.repository import (
     PostgreSQLMetadataRepository,
     DynamoDBMetadataRepository,
@@ -29,19 +30,36 @@ def create_app(mode: str) -> FastAPI:
         )
         metadata_repository = PostgreSQLMetadataRepository(database)
 
+    metadata_service = MetadataService(
+        metadata_repository=metadata_repository,
+    )
+
+    consumer = MetadataConsumer(
+        queue_name=os.getenv("QUEUE_NAME"), metadata_service=metadata_service
+    )
+
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         if database:
             await database.connect()
             await database.initialize()
-            # setup_storage()
+
+        consumer_task = None
+        if mode == "local":
+            consumer_task = asyncio.create_task(consumer.start())
+
         yield
+
+        if consumer_task:
+            consumer_task.cancel()
+            try:
+                await consumer_task
+            except asyncio.CancelledError:
+                pass
+
         if database:
             await database.disconnect()
 
-    metadata_service = MetadataService(
-        metadata_repository=metadata_repository,
-    )
     app = FastAPI(lifespan=lifespan)
     app.state.metadata_service = metadata_service
     return app

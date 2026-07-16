@@ -1,7 +1,7 @@
 import uuid
 import logging
 
-from src.models import FileUploadInput, UploadUrlResponse
+from src.models import FileUploadInput, UploadUrlResponse, FileUploadedEvent
 from src.core.config import FILE_MAX_SIZE
 from src.core.exceptions import (
     EmptyFileException,
@@ -11,6 +11,7 @@ from src.core.exceptions import (
     S3StorageException,
 )
 from src.repository import StorageRepository
+from src.producer import MetadataPublisher
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +20,14 @@ class FileService:
     def __init__(
         self,
         storage_repository: StorageRepository,
+        metadata_publisher: MetadataPublisher,
     ):
         self.storage_repository = storage_repository
+        self.metadata_publisher = metadata_publisher
+
+    async def save_file_service(self, metadata: FileUploadedEvent, content: bytes):
+        await self.storage_repository.save_file(metadata.stored_name, content)
+        await self.metadata_publisher.publish(metadata)
 
     async def generate_upload_url_service(
         self, file_input: FileUploadInput

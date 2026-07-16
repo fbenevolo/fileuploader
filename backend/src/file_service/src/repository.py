@@ -3,7 +3,6 @@ import logging
 import aiofiles
 import aiofiles.os
 from pathlib import Path
-from typing import Protocol
 from botocore.exceptions import BotoCoreError, ClientError
 from src.core.exceptions import S3StorageException
 
@@ -11,17 +10,22 @@ from src.core.exceptions import S3StorageException
 logger = logging.getLogger(__name__)
 
 
-class StorageRepository(Protocol):
-    async def generate_upload_url(self, filename: str) -> None: ...
-    async def download_file(self, stored_name: str) -> bytes: ...
-    async def delete_file(self, stored_name: str) -> None: ...
+class StorageRepository:
+    async def generate_upload_url(self, filename: str) -> str:
+        raise NotImplementedError
+
+    async def download_file(self, file_id: str) -> bytes:
+        raise NotImplementedError
+
+    async def delete_file(self, file_id: str) -> None:
+        raise NotImplementedError
 
 
-class LocalStorageRepository:
+class LocalStorageRepository(StorageRepository):
     def __init__(self, files_dir: Path):
         self.files_dir = files_dir
 
-    def generate_upload_url(self, filename):
+    def generate_upload_url(self, filename: str) -> str:
         return f"/files/upload/{filename}"
 
     async def download_file(self, stored_name: str) -> bytes:
@@ -46,13 +50,22 @@ class LocalStorageRepository:
             logger.error("File not found")
             raise FileNotFoundError("File not found")
 
+    async def save_file(self, filename: str, content: bytes) -> None:
+        filepath = self.files_dir / filename
+        try:
+            async with aiofiles.open(filepath, "wb") as f:
+                await f.write(content)
+            logger.info(f"File {filename} saved successfully")
+        except Exception as e:
+            raise Exception(f"Could not save file {filename}") from e
+
 
 class S3StorageRepository:
     def __init__(self, bucket_name: str):
         self.bucket_name = bucket_name
         self.session = aioboto3.Session()
 
-    async def generate_upload_url(self, filename: str) -> None:
+    async def generate_upload_url(self, filename: str) -> str:
         """
         Instead of uploading the file, generates a presigned URL so that the client
         can directly upload the file to S3 through PUT method

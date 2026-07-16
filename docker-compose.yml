@@ -11,7 +11,7 @@ services:
       database:
         condition: service_healthy
     volumes:
-      - storage_data:/app/storage
+      - storage_data:/app/data
 
   metadata:
     build:
@@ -25,7 +25,16 @@ services:
       database:
         condition: service_healthy
     volumes:
-      - storage_data:/app/storage
+      - storage_data:/app/data
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
   database:
     image: postgres:17
     env_file:
