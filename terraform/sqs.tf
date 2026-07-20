@@ -16,7 +16,7 @@ resource "aws_sqs_queue_policy" "allow_s3" {
           Service = "s3.amazonaws.com"
         }
         Action = "sqs:SendMessage"
-        Resource = aws_sqs_queue.metadata_events.arn
+        Resource = aws_sqs_queue.metadata_queue.arn
       }
     ]
   })
