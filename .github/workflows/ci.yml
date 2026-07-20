@@ -9,6 +9,8 @@ on:
       - "terraform/**"
       - ".github/workflows/**"
 
+  workflow_dispatch:
+
 
 jobs:
 
