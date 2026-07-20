@@ -1,0 +1,14 @@
+name: File Service
+
+on:
+  push:
+    paths:
+      - "backend/src/file_service/**"
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-template.yml
+    with:
+      service-name: file-service
+      service-path: backend/src/file_service
+      lambda-name: file-service

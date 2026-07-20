@@ -1,0 +1,14 @@
+name: Metadata Service
+
+on:
+  push:
+    paths:
+      - "backend/src/metadata_service/**"
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-template.yml
+    with:
+      service-name: metadata-service
+      service-path: backend/src/metadata_service
+      lambda-name: metadata-service
