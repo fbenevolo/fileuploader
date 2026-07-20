@@ -18,6 +18,7 @@ jobs:
     with:
       service-name: file-service
       service-path: backend/src/file_service
+    secrets: inherit
 
 
   metadata-service:
@@ -26,6 +27,8 @@ jobs:
     with:
       service-name: metadata-service
       service-path: backend/src/metadata_service
+    secrets: inherit
+
 
   deploy:
     name: Deploy Infrastructure
