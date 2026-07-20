@@ -40,13 +40,37 @@ resource "aws_iam_role_policy_attachment" "logs_permission" {
 
 # ==========================================================================
 
-# ================================ function ================================ 
+# ================================ functions ================================ 
 
-resource "aws_lambda_function" "fileuploader_function" {
-  function_name = "fileuploader"
+resource "aws_lambda_function" "file_function" {
+  function_name = "file-service"
   role = aws_iam_role.lambdarole.arn
 
-  s3_bucket = "fileuploader-zip"
+  s3_bucket = "file-service-zip"
+  s3_key = var.lambda_key
+
+  # filename = data.archive_file.fileuploader_file.output_path
+  handler = "main.handler"
+  runtime = "python3.12"
+
+  # detect changes in zip file 
+  # source_code_hash = data.archive_file.fileuploader_file.output_base64sha256
+
+  timeout = 30
+  memory_size = 512
+
+  environment {
+    variables = {
+      BUCKET_NAME = aws_s3_bucket.fileuploaderbucket.bucket
+    }
+  }
+}
+
+resource "aws_lambda_function" "metadata_function" {
+  function_name = "metadata-service"
+  role = aws_iam_role.lambdarole.arn
+
+  s3_bucket = "metadata-service-zip"
   s3_key = var.lambda_key
 
   # filename = data.archive_file.fileuploader_file.output_path
@@ -70,11 +94,21 @@ resource "aws_lambda_function" "fileuploader_function" {
 # ==========================================================================
 
 # ========================= api gateway permission =========================
-resource "aws_lambda_permission" "apigateway_permission" {
+
+resource "aws_lambda_permission" "file_apigateway_permission" {
   statement_id = "AllowAPIGateway"
   action = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.fileuploader_function.function_name
+  function_name = aws_lambda_function.file_function.function_name
   principal = "apigateway.amazonaws.com"
   source_arn = "${aws_apigatewayv2_api.fileuploader_api.execution_arn}/*/*"
 }
+
+resource "aws_lambda_permission" "metadata_apigateway_permission" {
+  statement_id = "AllowAPIGateway"
+  action = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.metadata_function.function_name
+  principal = "apigateway.amazonaws.com"
+  source_arn = "${aws_apigatewayv2_api.fileuploader_api.execution_arn}/*/*"
+}
+
 # ==========================================================================

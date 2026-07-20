@@ -85,23 +85,23 @@ class S3StorageRepository:
                 f"Error occured during upload of file {filename} to bucket {self.bucket_name}"
             ) from e
 
-    async def download_file(self, file_id: str) -> str:
+    async def download_file(self, stored_name: str) -> str:
         try:
             async with self.session.client("s3") as s3_client:
                 return s3_client.generate_presigned_url(
                     ClientMethod="get_object",
-                    Params={"Bucket": self.bucket_name, "Key": file_id},
+                    Params={"Bucket": self.bucket_name, "Key": stored_name},
                 )
         except (BotoCoreError, ClientError) as e:
             raise S3StorageException(
-                f"Error occured during download of file {file_id}"
+                f"Error occured during download of file {stored_name}"
             ) from e
 
-    async def delete_file(self, file_id: str) -> None:
+    async def delete_file(self, stored_name: str) -> None:
         try:
             async with self.session.client("s3") as s3_client:
-                await s3_client.delete_object(Bucket=self.bucket_name, Key=file_id)
+                await s3_client.delete_object(Bucket=self.bucket_name, Key=stored_name)
         except (BotoCoreError, ClientError) as e:
             raise S3StorageException(
-                f"Error occured during deletion of file {file_id}"
+                f"Error occured during deletion of file {stored_name}"
             ) from e
