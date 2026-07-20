@@ -35,9 +35,8 @@ jobs:
     needs:
       - file-service
       - metadata-service
-
     uses: ./.github/workflows/deploy.yml
-
     with:
       file-lambda-key: lambda/file-service/${{ needs.file-service.outputs.artifact-sha }}.zip
       metadata-lambda-key: lambda/metadata-service/${{ needs.metadata-service.outputs.artifact-sha }}.zip
+    secrets: inherit
