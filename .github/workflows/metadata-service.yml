@@ -5,6 +5,8 @@ on:
     paths:
       - "backend/src/metadata_service/**"
 
+  workflow_dispatch:
+
 jobs:
   build:
     uses: ./.github/workflows/build-template.yml
