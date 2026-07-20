@@ -40,3 +40,66 @@ jobs:
         - name: Run ruff
           run: |
             ruff format --check ${{ inputs.service-path }}/
+
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
+          # usa caching de dependências para agilizar a execução do workflow
+          cache: pip
+          cache-dependency-path: ${{ inputs.service-path }}/requirements.txt
+
+      - name: Install dependencies
+        # usar python garante que o pip pertence ao interpretador configurado 
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r ${{ inputs.service-path }}/requirements.txt
+  
+      - name: Run Tests
+        run: |
+          cd ${{ inputs.service-path }}/tests
+          pytest -v
+
+#   package:
+#     needs: test
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+    
+#       - name: Build lambda package
+#         run: |
+#           mkdir build
+  
+#           pip install \
+#               --target build \
+#               -r backend/requirements.txt
+  
+#           cp -r backend/src build/src
+#           cp backend/main.py build/
+#           cp backend/__init__.py build/
+
+#       - name: Create zip
+#         run: |
+#           cd build
+#           zip -r ../lambda.zip .
+
+#       - name: Configure AWS credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: us-east-1
+
+#       - name: Upload artifact to S3
+#         run: |
+#           aws s3 cp \
+#             lambda.zip \
+#             s3://fileuploader-zip/lambda/${{ github.sha }}.zip
