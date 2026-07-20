@@ -13,4 +13,5 @@ resource "aws_s3_bucket_notification" "file_created" {
     ]
   }
 
+  depends_on = [ aws_sqs_queue_policy.allow_s3 ]
 }

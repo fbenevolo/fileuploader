@@ -47,7 +47,7 @@ resource "aws_lambda_function" "file_function" {
   function_name = "file-service"
   role = aws_iam_role.lambdarole.arn
 
-  s3_bucket = "file-service-zip"
+  s3_bucket = "fileuploader-zip/lambda/file-service"
   s3_key = var.file_lambda_key
 
   # filename = data.archive_file.fileuploader_file.output_path
@@ -96,7 +96,7 @@ resource "aws_lambda_function" "metadata_api_function" {
   function_name = "metadata-api-service"
   role = aws_iam_role.lambdarole.arn
 
-  s3_bucket = "metadata-service-zip"
+  s3_bucket = "fileuploader-zip/lambda/metadata-service"
   s3_key = var.metadata_lambda_key
 
   handler = "main.handler"
@@ -118,7 +118,7 @@ resource "aws_lambda_function" "metadata_worker_function" {
   function_name = "metadata-worker-service"
   role = aws_iam_role.lambdarole.arn
   
-  s3_bucket = "metadata-service-zip"
+  s3_bucket = "fileuploader-zip/lambda/metadata-service"
   s3_key = var.metadata_lambda_key
   
   handler = "sqs_handler.handler"
