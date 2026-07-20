@@ -150,7 +150,7 @@ resource "aws_lambda_permission" "file_apigateway_permission" {
 resource "aws_lambda_permission" "metadata_apigateway_permission" {
   statement_id = "AllowAPIGateway"
   action = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.metadata_function.function_name
+  function_name = aws_lambda_function.metadata_api_function.function_name
   principal = "apigateway.amazonaws.com"
   source_arn = "${aws_apigatewayv2_api.fileuploader_api.execution_arn}/*/*"
 }
@@ -161,7 +161,7 @@ resource "aws_lambda_permission" "metadata_apigateway_permission" {
 
 resource "aws_lambda_event_source_mapping" "metadata_sqs_trigger" {
   event_source_arn = aws_sqs_queue.metadata_queue.arn
-  function_name = aws_lambda_function.metadata_function.function_name
+  function_name = aws_lambda_function.metadata_worker_function.function_name
   batch_size = 10
   enabled = true
 
