@@ -38,6 +38,11 @@ resource "aws_iam_role_policy_attachment" "logs_permission" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
 }
 
+resource "aws_iam_role_policy_attachment" "sqs_permission" {
+  role = aws_iam_role.lambdarole.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole"
+}
+
 # ==========================================================================
 
 # ================================ functions ================================ 
@@ -66,19 +71,62 @@ resource "aws_lambda_function" "file_function" {
   }
 }
 
-resource "aws_lambda_function" "metadata_function" {
-  function_name = "metadata-service"
+# resource "aws_lambda_function" "metadata_function" {
+#   function_name = "metadata-service"
+#   role = aws_iam_role.lambdarole.arn
+
+#   s3_bucket = "metadata-service-zip"
+#   s3_key = var.lambda_key
+
+#   # filename = data.archive_file.fileuploader_file.output_path
+#   handler = "main.handler"
+#   runtime = "python3.12"
+
+#   # detect changes in zip file 
+#   # source_code_hash = data.archive_file.fileuploader_file.output_base64sha256
+
+#   timeout = 30
+#   memory_size = 512
+
+#   environment {
+#     variables = {
+#       BUCKET_NAME = aws_s3_bucket.fileuploaderbucket.bucket
+#       DYNAMO_TABLE = aws_dynamodb_table.fileuploadertable.name
+#     }
+#   }
+# }
+
+resource "aws_lambda_function" "metadata_api_function" {
+  function_name = "metadata-api-service"
   role = aws_iam_role.lambdarole.arn
 
   s3_bucket = "metadata-service-zip"
   s3_key = var.lambda_key
 
-  # filename = data.archive_file.fileuploader_file.output_path
   handler = "main.handler"
+
   runtime = "python3.12"
 
-  # detect changes in zip file 
-  # source_code_hash = data.archive_file.fileuploader_file.output_base64sha256
+  timeout = 30
+  memory_size = 512
+
+  environment {
+    variables = {
+      BUCKET_NAME = aws_s3_bucket.fileuploaderbucket.bucket
+      DYNAMO_TABLE = aws_dynamodb_table.fileuploadertable.name
+    }
+  }
+}
+
+resource "aws_lambda_function" "metadata_worker_function" {
+  function_name = "metadata-worker-service"
+  role = aws_iam_role.lambdarole.arn
+  
+  s3_bucket = "metadata-service-zip"
+  s3_key = var.lambda_key
+  
+  handler = "sqs_handler.handler"
+  runtime = "python3.12"
 
   timeout = 30
   memory_size = 512
@@ -112,3 +160,13 @@ resource "aws_lambda_permission" "metadata_apigateway_permission" {
 }
 
 # ==========================================================================
+
+# ========================= metadata trigger ===============================
+
+resource "aws_lambda_event_source_mapping" "metadata_sqs_trigger" {
+  event_source_arn = aws_sqs_queue.metadata_queue.arn
+  function_name = aws_lambda_function.metadata_function.function_name
+  batch_size = 10
+  enabled = true
+
+}

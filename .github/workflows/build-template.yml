@@ -81,9 +81,7 @@ jobs:
               --target build \
               -r ${{ inputs.service-path }}/requirements.txt
   
-          cp -r ${{ inputs.service-path }}/src build/src
-          cp ${{ inputs.service-path }}/main.py build/
-          cp ${{ inputs.service-path }}/__init__.py build/
+          cp -r ${{ inputs.service-path }}/* build/
 
       - name: Create zip
         run: |

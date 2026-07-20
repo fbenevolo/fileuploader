@@ -18,7 +18,7 @@ resource "aws_apigatewayv2_integration" "file_lambda_integration" {
 resource "aws_apigatewayv2_integration" "metadata_lambda_integration" {
   api_id = aws_apigatewayv2_api.fileuploader_api.id
   integration_type = "AWS_PROXY"
-  integration_uri = aws_lambda_function.metadata_function.invoke_arn
+  integration_uri = aws_lambda_function.metadata_api_function.invoke_arn
 }
 
 
