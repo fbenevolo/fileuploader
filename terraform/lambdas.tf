@@ -1,7 +1,3 @@
-variable "lambda_key" {
-  type = string 
-}
-
 data "aws_iam_policy_document" "assume_role" {
   statement {
     effect = "Allow"
@@ -52,7 +48,7 @@ resource "aws_lambda_function" "file_function" {
   role = aws_iam_role.lambdarole.arn
 
   s3_bucket = "file-service-zip"
-  s3_key = var.lambda_key
+  s3_key = var.file_lambda_key
 
   # filename = data.archive_file.fileuploader_file.output_path
   handler = "main.handler"
@@ -101,7 +97,7 @@ resource "aws_lambda_function" "metadata_api_function" {
   role = aws_iam_role.lambdarole.arn
 
   s3_bucket = "metadata-service-zip"
-  s3_key = var.lambda_key
+  s3_key = var.metadata_lambda_key
 
   handler = "main.handler"
 
@@ -123,7 +119,7 @@ resource "aws_lambda_function" "metadata_worker_function" {
   role = aws_iam_role.lambdarole.arn
   
   s3_bucket = "metadata-service-zip"
-  s3_key = var.lambda_key
+  s3_key = var.metadata_lambda_key
   
   handler = "sqs_handler.handler"
   runtime = "python3.12"

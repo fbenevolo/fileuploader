@@ -11,9 +11,10 @@ on:
         required: true
         type: string
 
-      lambda-name:
-        required: true
-        type: string
+    outputs:
+      artifact-sha:
+        description: "Commit SHA used for Lambda artifact"
+        value: ${{ jobs.package.outputs.sha }}
 
 
 jobs:
@@ -69,6 +70,10 @@ jobs:
   package:
     needs: test
     runs-on: ubuntu-latest
+
+    outputs:
+      sha: ${{ steps.version.outputs.sha }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -87,6 +92,11 @@ jobs:
         run: |
           cd build
           zip -r ../${{ inputs.service-name }}.zip .
+
+      - name: Get artifact version
+        id: version
+        run: |
+          echo "sha=${GITHUB_SHA}" >> $GITHUB_OUTPUT
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

@@ -9,3 +9,11 @@ variable "bucket_name" {
 variable "dynamo_table_name" {
     default = "fileuploader-table"
 }
+
+variable "file_lambda_key" {
+  type = string
+}
+
+variable "metadata_lambda_key" {
+  type = string
+}

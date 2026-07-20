@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/src/**"
+      - "terraform/**"
+      - ".github/workflows/**"
+
+
+jobs:
+
+  file-service:
+    name: Build File Service
+    uses: ./.github/workflows/build-template.yml
+    with:
+      service-name: file-service
+      service-path: backend/src/file_service
+
+
+  metadata-service:
+    name: Build Metadata Service
+    uses: ./.github/workflows/build-template.yml
+    with:
+      service-name: metadata-service
+      service-path: backend/src/metadata_service
+
+  deploy:
+    name: Deploy Infrastructure
+    needs:
+      - file-service
+      - metadata-service
+
+    uses: ./.github/workflows/deploy.yml
+
+    with:
+      file-lambda-key: lambda/file-service/${{ needs.file-service.outputs.artifact-sha }}.zip
+      metadata-lambda-key: lambda/metadata-service/${{ needs.metadata-service.outputs.artifact-sha }}.zip
