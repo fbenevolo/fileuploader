@@ -14,3 +14,4 @@ jobs:
       service-name: file-service
       service-path: backend/src/file_service
       lambda-name: file-service
+    secrets: inherit

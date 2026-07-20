@@ -14,3 +14,4 @@ jobs:
       service-name: metadata-service
       service-path: backend/src/metadata_service
       lambda-name: metadata-service
+    secrets: inherit
