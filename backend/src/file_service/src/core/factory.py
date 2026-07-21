@@ -21,12 +21,11 @@ def create_app(mode: str) -> FastAPI:
 
     logger.info(f"Inicialing with mode {mode}")
 
-    setup_storage()
-
     if mode == "aws":
         storage_repository = S3StorageRepository(os.getenv("BUCKET_NAME"))
         metadata_publisher = None
     else:
+        setup_storage()
         storage_repository = LocalStorageRepository(FILES_DIR)
         metadata_publisher = RabbitMQMetadataPublisher(os.getenv("QUEUE_NAME"))
 
