@@ -63,6 +63,7 @@ resource "aws_lambda_function" "file_function" {
   environment {
     variables = {
       BUCKET_NAME = aws_s3_bucket.fileuploaderbucket.bucket
+      APP_MODE = "aws"
     }
   }
 }
@@ -110,6 +111,7 @@ resource "aws_lambda_function" "metadata_api_function" {
     variables = {
       BUCKET_NAME = aws_s3_bucket.fileuploaderbucket.bucket
       DYNAMO_TABLE = aws_dynamodb_table.fileuploadertable.name
+      APP_MODE = "aws"
     }
   }
 }
